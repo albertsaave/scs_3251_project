@@ -1,0 +1,262 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Does the proportion of cats adopted change YoY?"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import pandas as pd\n",
+    "import numpy as np\n",
+    "import seaborn as sns\n",
+    "import matplotlib.pyplot as plt\n",
+    "import math as math\n",
+    "import scipy as scipy\n",
+    "%matplotlib inline\n",
+    "\n",
+    "cats = pd.read_csv('/Users/ValentinaParra/Desktop/Data Science - U of T/3251 - Statistics/aac_shelter_cat_outcome_eng.csv')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "cats['adopted'] = np.where(cats['outcome_type'] == 'Adoption', 1, 0)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "2015    7339\n",
+       "2014    6935\n",
+       "2016    6627\n",
+       "2017    6577\n",
+       "2013    1605\n",
+       "2018     338\n",
+       "Name: outcome_year, dtype: int64"
+      ]
+     },
+     "execution_count": 3,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "cats.outcome_year.value_counts()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "0    16689\n",
+       "1    12732\n",
+       "Name: adopted, dtype: int64"
+      ]
+     },
+     "execution_count": 4,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "cats.adopted.value_counts()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Hypothesis Testing\n",
+    "\n",
+    "H0 - The proportion of cats who get adopted changes YoY (p = p0)\n",
+    "\n",
+    "HA - The proportion of cats who get adopted changes YoY (p ≠ p0)\n",
+    "\n",
+    "\n",
+    "We will perform a Z-Test on the data and compare the adoption rates between 2016 and 2018 to see if year has en effect on adoption rates. This will help determine whether the animal shelter should take into account year when anticipating adoption rates.\n",
+    "\n",
+    "We chose α = 0.05"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Prepare Proportions"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "test_outcome_year = cats.filter(['outcome_year', 'adopted'])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "2015    7339\n",
+       "2014    6935\n",
+       "2016    6627\n",
+       "2017    6577\n",
+       "2013    1605\n",
+       "2018     338\n",
+       "Name: outcome_year, dtype: int64"
+      ]
+     },
+     "execution_count": 6,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "test_outcome_year['outcome_year'].value_counts()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "3111\n"
+     ]
+    }
+   ],
+   "source": [
+    "#get num cats who got adopted in 2016\n",
+    "df_2016_adoption = test_outcome_year[test_outcome_year['outcome_year'] == 2016]\n",
+    "df_2016_adoption = df_2016_adoption[df_2016_adoption['adopted'] == 1]\n",
+    "print(len(df_2016_adoption))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "3273\n"
+     ]
+    }
+   ],
+   "source": [
+    "#get num cats who got adopted in 2017\n",
+    "df_2017_adoption = test_outcome_year[test_outcome_year['outcome_year'] == 2017]\n",
+    "df_2017_adoption = df_2017_adoption[df_2017_adoption['adopted'] == 1]\n",
+    "print(len(df_2017_adoption))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "n1 =6627\n",
+    "p0 = 3111/n1\n",
+    "n2 = 6577\n",
+    "p = 3273/n2"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "standard_error = np.sqrt(.00003787)\n",
+    "z_score = (p - p0)/standard_error"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "p_value = scipy.stats.norm.cdf(z_score)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "0.999997702839602"
+      ]
+     },
+     "execution_count": 12,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "p_value"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Conclusion: The large p-value above tells us that there is no statistically significant difference in the number of cats who get adopted year over year.  When predicting for 2018 and any future years, the year will not be taken into account in the model."
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.6.6"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
